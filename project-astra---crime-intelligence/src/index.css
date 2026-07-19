@@ -79,6 +79,16 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Mobile bottom sheet slide-up animation */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
 /* Leaflet map styling overrides for beautiful dark tactical look */
 .leaflet-container {
   background: #07090f !important;
