@@ -11,7 +11,9 @@ import {
   Sparkles,
   ArrowRight,
   ShieldAlert,
-  Fingerprint
+  Fingerprint,
+  X,
+  Menu
 } from 'lucide-react';
 import { CopilotMessage } from '../types';
 
@@ -45,9 +47,9 @@ export default function CopilotView() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentStep, setCurrentStep] = useState<number>(-1);
+  const [showTemplates, setShowTemplates] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Sample prompt templates to trigger fast clickable demos
   const samplePrompts = [
     {
       title: "Statutes query",
@@ -63,15 +65,14 @@ export default function CopilotView() {
     }
   ];
 
-  // Auto-scroll to bottom of thread
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping, currentStep]);
 
   const handleSend = (textToSend: string) => {
     if (!textToSend.trim() || isTyping) return;
+    setShowTemplates(false);
 
-    // Add user message
     const userMsg: CopilotMessage = {
       id: `msg-usr-${Date.now()}`,
       sender: "user",
@@ -85,7 +86,6 @@ export default function CopilotView() {
     setCurrentStep(0);
   };
 
-  // Simulate agentic reasoning stream
   useEffect(() => {
     if (!isTyping || currentStep === -1) return;
 
@@ -96,7 +96,6 @@ export default function CopilotView() {
       }, 1000);
       return () => clearTimeout(timer);
     } else {
-      // Create response matching user queries
       const lastUserText = messages[messages.length - 1].content.toLowerCase();
       let responseText = "";
       let responseEntities: any[] = [];
@@ -157,10 +156,10 @@ export default function CopilotView() {
   };
 
   return (
-    <div className="flex-1 bg-[#090b11] h-screen flex overflow-hidden font-sans text-slate-300">
+    <div className="flex-1 bg-[#090b11] h-screen flex overflow-hidden font-sans text-slate-300 relative">
       
-      {/* Left Chat Sidebar with prompt templates */}
-      <div className="w-72 bg-[#0c0e17] border-r border-[#1e293b]/40 h-full p-6 flex flex-col shrink-0">
+      {/* Desktop Template Sidebar */}
+      <div className="hidden md:flex w-72 bg-[#0c0e17] border-r border-[#1e293b]/40 h-full p-6 flex-col shrink-0">
         <h2 className="text-sm font-bold text-white mb-4">Investigative Copilot</h2>
         <p className="text-xs text-slate-500 mb-6 font-sans leading-relaxed">
           Ask natural-language questions to parse both structured databases and unstructured FIR contents entirely air-gapped.
@@ -168,7 +167,6 @@ export default function CopilotView() {
 
         <div className="h-px bg-slate-800/80 mb-6" />
 
-        {/* Templates */}
         <h3 className="text-[10px] text-slate-400 font-mono tracking-wider font-bold uppercase mb-3">
           Example Queries
         </h3>
@@ -193,65 +191,100 @@ export default function CopilotView() {
         </div>
       </div>
 
+      {/* Mobile Template Overlay */}
+      {showTemplates && (
+        <div className="md:hidden fixed inset-0 bg-black/60 z-30" onClick={() => setShowTemplates(false)} />
+      )}
+      {showTemplates && (
+        <div className="md:hidden fixed left-0 top-12 bottom-0 w-72 max-w-[85vw] bg-[#0c0e17] border-r border-[#1e293b]/40 p-5 flex flex-col z-40 shadow-2xl">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-white">Example Queries</h2>
+            <button onClick={() => setShowTemplates(false)} className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="flex-1 space-y-3 overflow-y-auto">
+            {samplePrompts.map((p, i) => (
+              <button
+                key={i}
+                onClick={() => handleSend(p.text)}
+                disabled={isTyping}
+                className="w-full text-left p-3 bg-[#121624] border border-[#1e293b]/40 rounded-xl hover:border-blue-500/40 hover:bg-blue-500/5 transition-all text-xs font-sans group disabled:opacity-50"
+              >
+                <span className="font-bold text-white block group-hover:text-blue-400 transition-colors mb-1">
+                  {p.title}
+                </span>
+                <p className="text-slate-400 leading-normal truncate">{p.text}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Main chat interface */}
       <div className="flex-1 flex flex-col h-full bg-[#07090e] overflow-hidden">
         {/* Chat Header */}
-        <div className="h-16 bg-[#0c0e17] border-b border-[#1e293b]/40 px-6 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600/10 rounded-lg text-blue-400 border border-blue-500/10">
-              <MessageSquareCode className="w-4 h-4" />
+        <div className="h-14 md:h-16 bg-[#0c0e17] border-b border-[#1e293b]/40 px-3 md:px-6 flex items-center justify-between shrink-0 gap-2">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <button 
+              onClick={() => setShowTemplates(true)}
+              className="md:hidden p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors shrink-0"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            <div className="p-1.5 md:p-2 bg-blue-600/10 rounded-lg text-blue-400 border border-blue-500/10 shrink-0">
+              <MessageSquareCode className="w-3.5 h-3.5 md:w-4 md:h-4" />
             </div>
-            <div>
-              <h2 className="text-sm font-bold text-white font-sans">ASTRA Copilot</h2>
-              <p className="text-[10px] text-slate-500 font-mono">Multi-agent crime intelligence assistant</p>
+            <div className="min-w-0">
+              <h2 className="text-xs md:text-sm font-bold text-white font-sans">ASTRA Copilot</h2>
+              <p className="text-[9px] md:text-[10px] text-slate-500 font-mono hidden sm:block">Multi-agent crime intelligence assistant</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-mono">
+          <div className="flex items-center gap-2 md:gap-4 text-[10px] md:text-xs font-mono shrink-0">
             <span className="flex items-center gap-1.5 text-emerald-400">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-              Connected (Local)
+              <span className="hidden sm:inline">Connected (Local)</span>
+              <span className="sm:hidden">Online</span>
             </span>
             <button 
               onClick={handleClear}
-              className="flex items-center gap-1 px-2.5 py-1 text-slate-500 hover:text-red-400 hover:bg-slate-800/40 rounded transition-all"
+              className="flex items-center gap-1 px-2 py-1 text-slate-500 hover:text-red-400 hover:bg-slate-800/40 rounded transition-all"
             >
               <Trash2 className="w-3.5 h-3.5" />
-              <span>Clear</span>
+              <span className="hidden sm:inline">Clear</span>
             </button>
           </div>
         </div>
 
         {/* Chat area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-3 md:p-6 space-y-4 md:space-y-6">
           {messages.map((msg) => {
             const isUser = msg.sender === 'user';
             return (
               <div 
                 key={msg.id}
-                className={`flex gap-4 max-w-3xl ${isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
+                className={`flex gap-3 md:gap-4 max-w-3xl ${isUser ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}
               >
-                {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border shadow-lg ${
+                <div className={`w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center shrink-0 border shadow-lg ${
                   isUser 
                     ? 'bg-blue-600 border-blue-500 text-white' 
                     : 'bg-[#121624] border-slate-800 text-blue-400'
                 }`}>
-                  {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                  {isUser ? <User className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <Bot className="w-3.5 h-3.5 md:w-4 md:h-4" />}
                 </div>
 
-                <div className="space-y-2">
-                  {/* Reasoning steps if present */}
+                <div className="space-y-2 min-w-0 max-w-[85%] md:max-w-none">
                   {msg.reasoningSteps && msg.reasoningSteps.length > 0 && (
-                    <div className="bg-[#121624]/60 border border-slate-800/60 rounded-xl p-4 max-w-xl font-mono text-xs">
-                      <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-1 border-b border-slate-800">
-                        <Terminal className="w-3.5 h-3.5 text-blue-400" />
+                    <div className="bg-[#121624]/60 border border-slate-800/60 rounded-xl p-3 md:p-4 max-w-xl font-mono text-[10px] md:text-xs overflow-x-auto">
+                      <div className="flex items-center gap-1.5 text-slate-400 mb-2 md:mb-3 pb-1 border-b border-slate-800">
+                        <Terminal className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                         <span className="font-bold tracking-tight">Agent Execution Pipeline</span>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-1.5 md:space-y-2">
                         {msg.reasoningSteps.map((step, index) => (
-                          <div key={index} className="flex gap-2">
-                            <span className="text-blue-400 font-bold min-w-[80px]">
+                          <div key={index} className="flex gap-1.5 md:gap-2">
+                            <span className="text-blue-400 font-bold min-w-[60px] md:min-w-[80px] shrink-0">
                               &gt; {step.agent}:
                             </span>
                             <span className="text-slate-400">{step.content}</span>
@@ -261,13 +294,11 @@ export default function CopilotView() {
                     </div>
                   )}
 
-                  {/* Message bubble */}
-                  <div className={`p-4.5 rounded-2xl shadow-md text-xs leading-relaxed max-w-xl font-sans ${
+                  <div className={`p-3 md:p-4.5 rounded-2xl shadow-md text-[11px] md:text-xs leading-relaxed max-w-xl font-sans ${
                     isUser 
                       ? 'bg-blue-600 text-white' 
                       : 'bg-[#121624] border border-[#1e293b]/40 text-slate-200'
                   }`}>
-                    {/* Render message formatting entity tags dynamically */}
                     <p className="whitespace-pre-line">
                       {msg.content.split(/(\[.*?\])/).map((part, i) => {
                         if (part.startsWith('[') && part.endsWith(']')) {
@@ -278,7 +309,7 @@ export default function CopilotView() {
                           return (
                             <span 
                               key={i} 
-                              className={`px-1.5 py-0.5 rounded font-mono font-bold mx-0.5 cursor-pointer inline-flex items-center ${
+                              className={`px-1 md:px-1.5 py-0.5 rounded font-mono font-bold mx-0.5 cursor-pointer inline-flex items-center ${
                                 isUser 
                                   ? 'bg-blue-800 text-white border border-blue-900'
                                   : isPerson
@@ -298,7 +329,7 @@ export default function CopilotView() {
                     </p>
                   </div>
 
-                  <span className="text-[9px] text-slate-500 block font-mono">
+                  <span className="text-[8px] md:text-[9px] text-slate-500 block font-mono">
                     {msg.timestamp}
                   </span>
                 </div>
@@ -306,53 +337,52 @@ export default function CopilotView() {
             );
           })}
 
-          {/* Simulated streaming progress steps block */}
           {isTyping && (
-            <div className="flex gap-4 max-w-3xl mr-auto">
-              <div className="w-8 h-8 rounded-full bg-[#121624] border-slate-800 text-blue-400 flex items-center justify-center shrink-0 shadow-lg border">
-                <Bot className="w-4 h-4 animate-pulse" />
+            <div className="flex gap-3 md:gap-4 max-w-3xl mr-auto">
+              <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#121624] border-slate-800 text-blue-400 flex items-center justify-center shrink-0 shadow-lg border">
+                <Bot className="w-3.5 h-3.5 md:w-4 md:h-4 animate-pulse" />
               </div>
 
-              <div className="space-y-3 font-mono text-xs w-full">
-                <div className="bg-[#121624]/60 border border-slate-800/60 rounded-xl p-4 max-w-xl">
-                  <div className="flex items-center gap-1.5 text-slate-400 mb-3 pb-1 border-b border-slate-800">
-                    <Terminal className="w-3.5 h-3.5 text-blue-400" />
+              <div className="space-y-2 md:space-y-3 font-mono text-[10px] md:text-xs w-full min-w-0">
+                <div className="bg-[#121624]/60 border border-slate-800/60 rounded-xl p-3 md:p-4 max-w-xl overflow-x-auto">
+                  <div className="flex items-center gap-1.5 text-slate-400 mb-2 md:mb-3 pb-1 border-b border-slate-800">
+                    <Terminal className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                     <span className="font-bold tracking-tight">Agent Execution Pipeline</span>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 md:space-y-2">
                     {currentStep >= 0 && (
-                      <div className="flex gap-2">
-                        <span className="text-blue-400 font-bold min-w-[80px]">&gt; Supervisor:</span>
-                        <span className="text-slate-400 animate-pulse">Analyzing user query and routing...</span>
+                      <div className="flex gap-1.5 md:gap-2">
+                        <span className="text-blue-400 font-bold min-w-[60px] md:min-w-[80px] shrink-0">&gt; Supervisor:</span>
+                        <span className="text-slate-400 animate-pulse">Analyzing query...</span>
                       </div>
                     )}
                     {currentStep >= 1 && (
-                      <div className="flex gap-2">
-                        <span className="text-blue-400 font-bold min-w-[80px]">&gt; SQL-Agent:</span>
-                        <span className="text-slate-400 animate-pulse">Searching spatiotemporal database index...</span>
+                      <div className="flex gap-1.5 md:gap-2">
+                        <span className="text-blue-400 font-bold min-w-[60px] md:min-w-[80px] shrink-0">&gt; SQL-Agent:</span>
+                        <span className="text-slate-400 animate-pulse">Searching database...</span>
                       </div>
                     )}
                     {currentStep >= 2 && (
-                      <div className="flex gap-2">
-                        <span className="text-blue-400 font-bold min-w-[80px]">&gt; Vector-Agent:</span>
-                        <span className="text-slate-400 animate-pulse">Computing cosine pattern matching...</span>
+                      <div className="flex gap-1.5 md:gap-2">
+                        <span className="text-blue-400 font-bold min-w-[60px] md:min-w-[80px] shrink-0">&gt; Vector-Agent:</span>
+                        <span className="text-slate-400 animate-pulse">Computing patterns...</span>
                       </div>
                     )}
                     {currentStep >= 3 && (
-                      <div className="flex gap-2">
-                        <span className="text-blue-400 font-bold min-w-[80px]">&gt; Synthesis:</span>
-                        <span className="text-slate-400 animate-pulse">Compiling draft responses...</span>
+                      <div className="flex gap-1.5 md:gap-2">
+                        <span className="text-blue-400 font-bold min-w-[60px] md:min-w-[80px] shrink-0">&gt; Synthesis:</span>
+                        <span className="text-slate-400 animate-pulse">Drafting response...</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 text-slate-500 font-mono text-[10px]">
+                <div className="flex items-center gap-2 text-slate-500 font-mono text-[9px] md:text-[10px]">
                   <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                   <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  <span>ASTRA is synthesizing findings...</span>
+                  <span>ASTRA is synthesizing...</span>
                 </div>
               </div>
             </div>
@@ -362,30 +392,30 @@ export default function CopilotView() {
         </div>
 
         {/* Input area */}
-        <div className="p-4 border-t border-[#1e293b]/40 bg-[#0c0e17] shrink-0">
+        <div className="p-3 md:p-4 border-t border-[#1e293b]/40 bg-[#0c0e17] shrink-0">
           <div className="max-w-3xl mx-auto">
             <div className="relative flex items-center">
               <input
                 type="text"
-                placeholder="Ask about crime patterns, suspects, legal sections..."
+                placeholder="Ask about crime patterns, suspects..."
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSend(inputText);
                 }}
                 disabled={isTyping}
-                className="w-full bg-[#141a2e] text-white text-sm py-3.5 pl-4 pr-14 rounded-xl border border-[#1e293b]/60 focus:outline-none focus:border-blue-500 font-sans"
+                className="w-full bg-[#141a2e] text-white text-xs md:text-sm py-3 md:py-3.5 pl-3 md:pl-4 pr-12 md:pr-14 rounded-xl border border-[#1e293b]/60 focus:outline-none focus:border-blue-500 font-sans"
               />
               <button
                 onClick={() => handleSend(inputText)}
                 disabled={isTyping || !inputText.trim()}
-                className="absolute right-3 p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all disabled:opacity-50"
+                className="absolute right-2 md:right-3 p-1.5 md:p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-all disabled:opacity-50"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5 md:w-4 md:h-4" />
               </button>
             </div>
-            <p className="text-[10px] text-slate-500 text-center mt-2 font-mono">
-              Responses are AI-generated. Verify critical information independently. All queries are audited.
+            <p className="text-[9px] md:text-[10px] text-slate-500 text-center mt-2 font-mono">
+              AI-generated responses. Verify independently. All queries audited.
             </p>
           </div>
         </div>

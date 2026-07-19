@@ -53,6 +53,32 @@
   animation: pulse-ring 2s cubic-bezier(0.215, 0.610, 0.355, 1) infinite;
 }
 
+/* Mobile utility classes */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Prevent text selection on interactive mobile elements */
+.select-none {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth touch scrolling */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Leaflet map styling overrides for beautiful dark tactical look */
 .leaflet-container {
   background: #07090f !important;

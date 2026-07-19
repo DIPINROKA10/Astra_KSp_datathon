@@ -7,7 +7,8 @@ import {
   Search, 
   MessageSquareCode, 
   Bell, 
-  TrendingUp
+  TrendingUp,
+  X
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,9 +16,10 @@ interface SidebarProps {
   setActiveView: (view: string) => void;
   activeAlertCount: number;
   user?: { name: string; email: string; picture?: string; } | null;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ activeView, setActiveView, activeAlertCount, user }: SidebarProps) {
+export default function Sidebar({ activeView, setActiveView, activeAlertCount, user, onClose }: SidebarProps) {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'map', label: 'Crime Map', icon: Map },
@@ -31,14 +33,24 @@ export default function Sidebar({ activeView, setActiveView, activeAlertCount, u
   return (
     <div className="w-64 bg-[#0a0d16] border-r border-[#1e293b]/50 h-screen flex flex-col select-none text-slate-300">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-6 border-b border-[#1e293b]/50 gap-3">
-        <div className="p-2 bg-blue-600/15 rounded-lg text-blue-400">
-          <Shield className="w-6 h-6" />
+      <div className="h-16 flex items-center justify-between px-6 border-b border-[#1e293b]/50 gap-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-blue-600/15 rounded-lg text-blue-400">
+            <Shield className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="font-sans font-bold tracking-tight text-white text-lg">ASTRA</span>
+            <p className="text-[10px] text-slate-500 font-mono tracking-wider">KSP SYSTEMS v1.0</p>
+          </div>
         </div>
-        <div>
-          <span className="font-sans font-bold tracking-tight text-white text-lg">ASTRA</span>
-          <p className="text-[10px] text-slate-500 font-mono tracking-wider">KSP SYSTEMS v1.0</p>
-        </div>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="md:hidden p-1.5 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Menu */}
