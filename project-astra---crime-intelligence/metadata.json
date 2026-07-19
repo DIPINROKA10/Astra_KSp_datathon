@@ -1,0 +1,6 @@
+{
+  "name": "Project ASTRA - Crime Intelligence",
+  "description": "Sovereign Crime Intelligence Operating System for Karnataka State Police with spatiotemporal forecasting and agentic copilot",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
